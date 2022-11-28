@@ -13,6 +13,40 @@
                 <div class="mtext">Test List</div>
             </div>
         </div>
+
+        <form action="#" onsubmit="return handle_signup(event)" method="post">
+            <div class="field">
+                <input type="text" placeholder="Username" name="username" required>
+            </div>
+            <div class="field">
+                <input type="text" placeholder="First Name" name="firstName" required>
+            </div>
+            <div class="field">
+                <input type="text" placeholder="Last Name" name="lastName" required>
+            </div>
+            <div class="field">
+                <input type="text" placeholder="Address" name="address" required>
+            </div>
+            <div class="field">
+                <label for="paymentMethod">Preferred Payment Method: </label>
+                <select name="paymentMethod" id="paymentMethod">
+                    <option value="cash">CASH</option>
+                    <option value="credit">CREDIT</option>
+                    <option value="check">CHECK</option>
+                  </select>
+            </div>
+            <div class="field">
+                <input type="password" placeholder="Password" name="password" required>
+            </div>
+            <div class="field">
+                <input type="password" placeholder="Confirm Password" name="re_password" required>
+            </div>
+            <div class="field btn">
+                <div class="btn-layer"></div>
+                <input type="submit" value = "Signup">
+            </div>
+        </form>
+        <a href="login">Already Have an account? Click Here to Login!</a>
         <div class="mtext">
             <ol id="test_list">
 

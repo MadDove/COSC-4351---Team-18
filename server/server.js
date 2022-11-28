@@ -16,6 +16,7 @@ const connection = mysql.createConnection({
 connection.connect();
 
 async function handle_posts_requests(request, response) {
+    //Test table Queries
     if (request.url.substr(0,20) === '/requests/register') {
         if (request.url === '/requests/register') {
             const buffers = [];
@@ -43,14 +44,80 @@ async function handle_posts_requests(request, response) {
             });
         }
     }
+    //Signing up
+    else if (request.url.substr(0, 16) === "/requests/signup") {
+        const buffers = [];
+        for await (const chunk of request) {
+            buffers.push(chunk);
+        }
+        const user_info = JSON.parse(buffers.toString());
+        const exists_query = `SELECT UserID FROM persons WHERE Username="${user_info.Username}";`
+        connection.query(exists_query, (error, results) => {
+            if (error) {
+                console.log(error);
+                throw error;
+            }
+            if (Object.keys(results).length > 0) { // Username already exists
+                response.writeHead(409);
+                response.write(JSON.stringify({'Accepted': false}));
+                response.end();
+            } else {
+                const query = `INSERT INTO persons (Username, UserPassword, LastName, FirstName, Address, PaymentMethod) VALUES("${user_info.Username}", "${user_info.Password}", "${user_info.LastName}", "${user_info.FirstName}", "${user_info.Address}", "${user_info.PaymentMethod}");`;
+                connection.query(query, (error, results) => {
+                    if (error) {
+                        console.log(error);
+                        throw error;
+                    }
+
+                    response.writeHead(200);
+                    response.write(JSON.stringify({'Accepted': true, 'UserID': results.insertId}));
+                    response.end();
+                });
+            }
+        });
+    }
+    else if (request.url === '/requests/login') {
+        const buffers = [];
+        for await (const chunk of request) {
+            buffers.push(chunk);
+        }
+        const user_info = JSON.parse(buffers.toString());
+        const query = `SELECT UserID FROM persons WHERE (Username="${user_info.Username}" AND UserPassword="${user_info.Password}")`
+        connection.query(query, (error, results) => {
+            if (error) {
+                console.log(error);
+                response.writeHead(500);
+                response.end();
+                throw error;
+            }
+            if (Object.keys(results).length === 0) { // Username/Password combo not found in database
+                response.writeHead(200);
+                response.write(JSON.stringify({'Accepted': false}));
+                response.end();
+            }
+            else {
+                response.writeHead(200);
+                response.write(JSON.stringify({'Accepted': true, 'UserID': results['0'].UserID}));
+                response.end();
+            }
+        });
+    }
 }
 
 // Main function body of our server. All requests to our webpage are routed
 // through this function.
 async function server_handler(request, response) {
     console.log(request.url);
-    if (request.url === '/' ) { // Default to index page?
+    if (request.url === '/' || request.url === '/reservation') { // Default to index page?
+        file_path = pages_path + '/html/reservation.html';
+        content_type = 'text/html';
+    }
+    else if (request.url === '/register' ) {
         file_path = pages_path + '/html/register.html';
+        content_type = 'text/html';
+    }
+    else if (request.url === '/login' ) {
+        file_path = pages_path + '/html/login.html';
         content_type = 'text/html';
     }
 

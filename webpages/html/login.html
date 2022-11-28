@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title> Test Webpage </title>
+        <link rel="stylesheet" href="/webpages/src/loginstyles.css"> <!-- Will need to change this -->
+        <meta name="viewport" content="width=device.width, initial-scale=1.0">
+    </head>
+
+    <body>
+        <div class="wrapper">
+            <div class="title-text">
+                <div class="mtext">Test List</div>
+            </div>
+        </div>
+
+        <form action="#" onsubmit="return handle_login(event)" method="post">
+            <div class="field">
+                <input type="text" placeholder="Username" name="username" required>
+            </div>
+            <div class="field">
+                <input type="password" placeholder="Password" name="password" required>
+            </div>
+            <div class="field btn">
+                <div class="btn-layer"></div>
+                <input type="submit" value = "Login">
+            </div>
+        </form>
+        <a href="register">Not Registered Yet? Click Here to Create an Account!</a>
+        <div class="mtext">
+            <ol id="test_list">
+
+            </ol>
+        </div>
+        <script src="/webpages/src/login.js"> </script>
+    </body>
+
+</html>
