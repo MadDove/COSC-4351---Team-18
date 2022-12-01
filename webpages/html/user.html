@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title> User </title>
+        <link rel="stylesheet" href="/webpages/src/userstyles.css"> <!-- Will need to change this -->
+        <meta name="viewport" content="width=device.width, initial-scale=1.0">
+    </head>
+
+    <body>
+        <div class="wrapper">
+            <div class="title-text">
+                <div class="mtext">User</div>
+            </div>
+        </div>
+        
+        <div class="mtext">
+            <ol id="test_list">
+
+            </ol>
+        </div>
+        <form action="#" onsubmit="return handle_change_payment_method(event)" method="post">
+            <div class="field">
+                <label for="paymentMethod">Preferred Payment Method: </label>
+                <select name="paymentMethod" id="paymentMethod">
+                    <option value="cash">CASH</option>
+                    <option value="credit">CREDIT</option>
+                    <option value="check">CHECK</option>
+                    </select>
+            </div>
+            <div class="field btn">
+                <div class="btn-layer"></div>
+                <input type="submit" value = "Change Payment Method">
+            </div>
+        </form>
+
+        <a href="reservationRegistered">Reserve a Table</a>
+        <div class="btn-layer">
+            <button class="logoutbtn" id="logoutbtn" onclick="return handle_logout(event);">Log Out</button>
+        </div>
+        
+        <script src="/webpages/src/user.js"> </script>
+    </body>
+
+</html>

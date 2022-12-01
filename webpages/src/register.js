@@ -23,8 +23,8 @@ async function postSignup(data) {
     return response.json();
 }
 
-async function get_persons_table(data) {
-    const response = await fetch('/requests/register', {
+async function get_user_information(data) {
+    const response = await fetch('/requests/getUserInformation', {
         method: 'POST',
         headers: {
             'Content-Type': 'application.json'
@@ -67,12 +67,12 @@ const handle_signup = (event) => {
 }
 
 //Test to get a table
-// results = {TestTable: []}
-get_persons_table({UserID: 1}).then(results => {
+// results = {Info: []}
+get_user_information({UserID: 1}).then(results => {
     const test_list = document.getElementById('test_list');
     // test_list: {LastName, FirstName, Address, PreferredDinner, EarnedPointsd, PaymentMethod}
 
-    for (const list_info of results.TestTable) {
+    for (const list_info of results.Info) {
         const li = document.createElement('li');
 
         const body = `Last Name:  ${list_info.LastName} First Name: ${list_info.FirstName} Address: ${list_info.Address} Preferred Dinner: ${list_info.PreferredDinner} Earned Points: ${list_info.EarnedPointsd} Payment Method: ${list_info.PaymentMethod}\t` 
