@@ -203,6 +203,23 @@ async function handle_posts_requests(request, response) {
         }
     );
     }
+    else if (request.url.substr(0, 29) === "/requests/updatePaymentMethod") {
+        const buffers = [];
+        for await (const chunk of request) {
+            buffers.push(chunk);
+        }
+        const user_info = JSON.parse(buffers.toString());
+        const exists_query = `UPDATE persons SET PaymentMethod="${user_info.PaymentMethod}" WHERE UserID="${user_info.UserID}";`
+        connection.query(exists_query, (error, results) => {
+            if (error) {
+                console.log(error);
+                throw error;
+            }
+            response.writeHead(200);
+            response.write(JSON.stringify({'Accepted': true}));
+            response.end();
+        });
+    }
 }
 
 // Main function body of our server. All requests to our webpage are routed
@@ -223,6 +240,10 @@ async function server_handler(request, response) {
     }
     else if (request.url === '/login' ) {
         file_path = pages_path + '/html/login.html';
+        content_type = 'text/html';
+    }
+    else if (request.url === '/user' ) {
+        file_path = pages_path + '/html/user.html';
         content_type = 'text/html';
     }
 

@@ -137,7 +137,7 @@ date.addEventListener('change', () => {
             insertTableButton.addEventListener('click', () => {
                 if((getAvailableTables_results.Info.length <=  2 || newDate == 4 || newDate == 5 || newDate == 6 || getAvailableTables_results.Holiday == true) && currentPaymentMethod != "CREDIT"){
                     alert("High Traffic Day: No show will have minimum $10 charge. Please update your account with a valid credit card to reserve this date");
-                    //window.location.href = "/register";
+                    window.location.href = "/user";
                 }
                 else if((getAvailableTables_results.Info.length <=  2 || newDate == 4 || newDate == 5 || newDate == 6 || getAvailableTables_results.Holiday == true) && currentPaymentMethod == "CREDIT"){
                     alert("High Traffic Day: No show will have minimum $10 charge.");
