@@ -4,6 +4,7 @@ const mysql = require('./node_modules/mysql');
 
 const { hostname, port, pages_path } = require('./src/contants');
 const { title } = require('process');
+const { table } = require('console');
 
 //Create connection to our database
 const connection = mysql.createConnection({
@@ -17,8 +18,8 @@ connection.connect();
 
 async function handle_posts_requests(request, response) {
     //Test table Queries
-    if (request.url.substr(0,20) === '/requests/register') {
-        if (request.url === '/requests/register') {
+    if (request.url.substr(0,28) === '/requests/getUserInformation') {
+        if (request.url === '/requests/getUserInformation') {
             const buffers = [];
             for await (const chunk of request) {
                 buffers.push(chunk);
@@ -33,9 +34,9 @@ async function handle_posts_requests(request, response) {
                     throw error;
                 }
                 else {
-                    const rows = {TestTable: []};
+                    const rows = {Info: []};
                     for (const row of first_results) {
-                        rows.TestTable.push(row);
+                        rows.Info.push(row);
                     }
                     response.writeHead(200);
                     response.write(JSON.stringify(rows));
@@ -102,6 +103,106 @@ async function handle_posts_requests(request, response) {
             }
         });
     }
+    else if (request.url === '/requests/availableTables') {
+        const buffers = [];
+        for await (const chunk of request) {
+            buffers.push(chunk);
+        }
+        const date_info = JSON.parse(buffers.toString());
+        const weekday_query = `SELECT WEEKDAY("${date_info.Date}") as WEEKDAY`
+        const holiday_query = `SELECT DateID FROM HighTrafficDays WHERE (TrafficDate="${date_info.Date}")`
+        const output_available_tables_query = `SELECT TableID, Capacity From allTables WHERE TableID NOT IN (SELECT TableID FROM ReservedTables WHERE ReservationDate="${date_info.Date}")`
+        connection.query(output_available_tables_query, (error, output_available_tables_results) => {
+            if (error) {
+                console.log(error);
+                response.writeHead(500);
+                response.end();
+                throw error;
+            }
+            connection.query(weekday_query, (error, output_dates) => {
+                if (error) {
+                    console.log(error);
+                    response.writeHead(500);
+                    response.end();
+                    throw error;
+                }
+                connection.query(holiday_query, (error, output_holiday) => {
+                    if (error) {
+                        console.log(error);
+                        response.writeHead(500);
+                        response.end();
+                        throw error;
+                    }
+                    if (Object.keys(output_holiday).length > 0) {
+                        const rowsAvailableTables = {Info: [], Dates: [], 'Holiday': true}
+                        for (const rowAvailableTables of output_available_tables_results) {
+                            rowsAvailableTables.Info.push(rowAvailableTables);
+                        }
+                        for (const rowDate of output_dates) {
+                            rowsAvailableTables.Dates.push(rowDate);
+                        }
+                        response.writeHead(200);
+                        response.write(JSON.stringify(rowsAvailableTables));
+                        response.end();  
+                    }
+                    else{
+                        const rowsAvailableTables = {Info: [], Dates: [], 'Holiday': false}
+                        for (const rowAvailableTables of output_available_tables_results) {
+                            rowsAvailableTables.Info.push(rowAvailableTables);
+                        }
+                        for (const rowDate of output_dates) {
+                            rowsAvailableTables.Dates.push(rowDate);
+                        }
+                        response.writeHead(200);
+                        response.write(JSON.stringify(rowsAvailableTables));
+                        response.end();  
+                    }
+                });
+            });
+        });
+    }
+    else if (request.url === '/requests/reserve_guest') {
+        const buffers = [];
+        for await (const chunk of request) {
+            buffers.push(chunk);
+        }
+        const table_info = JSON.parse(buffers.toString());
+        const output_available_tables_query = `INSERT INTO ReservedTables (TableID, ReservationDate) VALUES("${table_info.TableID}", "${table_info.Date}")`;
+
+        connection.query(output_available_tables_query, (error, results) => {
+            if (error) {
+                console.log(error);
+                response.writeHead(500);
+                response.end();
+                throw error;
+            }
+            response.writeHead(200);
+            response.write(JSON.stringify({'Accepted': true}));
+            response.end();          
+        }
+    );
+    }
+    else if (request.url === '/requests/reserve_registered') {
+        const buffers = [];
+        for await (const chunk of request) {
+            buffers.push(chunk);
+        }
+        const table_info = JSON.parse(buffers.toString());
+        const output_available_tables_query = `INSERT INTO ReservedTables (UserID, TableID, ReservationDate) VALUES("${table_info.UserID}", "${table_info.TableID}", "${table_info.Date}")`;
+
+        connection.query(output_available_tables_query, (error, results) => {
+            if (error) {
+                console.log(error);
+                response.writeHead(500);
+                response.end();
+                throw error;
+            }
+            response.writeHead(200);
+            response.write(JSON.stringify({'Accepted': true}));
+            response.end();          
+        }
+    );
+    }
 }
 
 // Main function body of our server. All requests to our webpage are routed
@@ -110,6 +211,10 @@ async function server_handler(request, response) {
     console.log(request.url);
     if (request.url === '/' || request.url === '/reservation') { // Default to index page?
         file_path = pages_path + '/html/reservation.html';
+        content_type = 'text/html';
+    }
+    else if (request.url === '/reservationRegistered' ) {
+        file_path = pages_path + '/html/reservationRegistered.html';
         content_type = 'text/html';
     }
     else if (request.url === '/register' ) {
