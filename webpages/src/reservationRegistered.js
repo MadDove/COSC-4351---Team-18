@@ -10,6 +10,16 @@ const body = document.getElementById("body");
 //     })
 //     return response.json();
 // }
+async function get_user_information(data) {
+    const response = await fetch('/requests/getUserInformation', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application.json'
+        },
+        body: JSON.stringify(data)
+    })
+    return response.json();
+}
 
 async function get_available_tables_in_table(data) {
     const response = await fetch('/requests/availableTables', {
@@ -22,8 +32,8 @@ async function get_available_tables_in_table(data) {
     return response.json();
 }
 
-async function reserve_guest(data) {
-    const response = await fetch('/requests/reserve_guest', {
+async function reserve_registered(data) {
+    const response = await fetch('/requests/reserve_registered', {
         method: 'POST',
         headers: {
             'Content-Type': 'application.json'
@@ -46,8 +56,8 @@ else {
 }
 
 //check if the cookie is existed
-if ( document.cookie.indexOf('UserID') != -1){
-    window.location.href = "/reservationRegistered";
+if ( document.cookie.indexOf('UserID') == -1){
+    window.location.href = "/reservation";
   }
 
 function insert_table_button() {
@@ -80,10 +90,22 @@ const date = document.getElementById('date');
 date.addEventListener('change', () => {
     //display available tables on specific date
     get_available_tables_in_table({Date: date.value}).then(getAvailableTables_results => {
+    
+    var currentPaymentMethod;
+    get_user_information({UserID: user_id}).then(results => {
+        // test_list: {LastName, FirstName, Address, PreferredDinner, EarnedPointsd, PaymentMethod}
+    
+        for (const list_info of results.Info) {
+            
+            currentPaymentMethod = list_info.PaymentMethod.toString();
+            
+        }
+        
         var newDate;
         for (const table_date of getAvailableTables_results.Dates){
             newDate = table_date.WEEKDAY.toString();
         }
+        //alert(newDate);
 
         //Create a HTML Table element.
         
@@ -113,27 +135,43 @@ date.addEventListener('change', () => {
             const insertTableButton = insert_table_button();
             cell.appendChild(insertTableButton);
             insertTableButton.addEventListener('click', () => {
-                if(getAvailableTables_results.Info.length <=  2 || newDate == 4 || newDate == 5 || newDate == 6 || getAvailableTables_results.Holiday == true){
-                    alert("High Traffic Day: No show will have minimum $10 charge. Please register with a valid credit card to reserve this date");
-                    window.location.href = "/register";
+                if((getAvailableTables_results.Info.length <=  2 || newDate == 4 || newDate == 5 || newDate == 6 || getAvailableTables_results.Holiday == true) && currentPaymentMethod != "CREDIT"){
+                    alert("High Traffic Day: No show will have minimum $10 charge. Please update your account with a valid credit card to reserve this date");
+                    window.location.href = "/user";
+                }
+                else if((getAvailableTables_results.Info.length <=  2 || newDate == 4 || newDate == 5 || newDate == 6 || getAvailableTables_results.Holiday == true) && currentPaymentMethod == "CREDIT"){
+                    alert("High Traffic Day: No show will have minimum $10 charge.");
+                    reserve_registered({UserID: user_id, TableID: table_info.TableID, Date: date.value}).then(reserve_guest_results => {
+                        // song_info: {id, title, rating}
+                        if(reserve_guest_results.Accepted == true){
+                            alert(`Table Reserved`);
+                            window.location.reload();
+                        }
+                        else{
+                            alert(`An Error Has Occurred, Try Again`);
+                            window.location.reload();
+                        }
+                    });
                 }
                 else{
-                reserve_guest({TableID: table_info.TableID, Date: date.value}).then(reserve_guest_results => {
-                    // song_info: {id, title, rating}
-                    if(reserve_guest_results.Accepted == true){
-                        alert(`Table Reserved`);
-                        window.location.reload();
-                    }
-                    else{
-                        alert(`An Error Has Occurred, Try Again`);
-                        window.location.reload();
-                    }
-                });
-            }
+                    reserve_registered({UserID: user_id, TableID: table_info.TableID, Date: date.value}).then(reserve_guest_results => {
+                        // song_info: {id, title, rating}
+                        if(reserve_guest_results.Accepted == true){
+                            alert(`Table Reserved`);
+                            window.location.reload();
+                        }
+                        else{
+                            alert(`An Error Has Occurred, Try Again`);
+                            window.location.reload();
+                        }
+                    });
+                }
             });
         }
 
         available_tables_list.innerHTML = "";
         available_tables_list.appendChild(table);
+    });
+
     });
 });
